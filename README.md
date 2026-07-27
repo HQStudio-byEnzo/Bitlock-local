@@ -70,4 +70,4 @@ Dans BitLock, ouvrir **Paramètres → Sécurité → Extension navigateur local
 
 ## Licence
 
-MIT — Tensor Team
+[MIT](LICENSE) — KernelStudio-byEnzo
