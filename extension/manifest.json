@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "BitLock Local",
+  "version": "1.0.0",
+  "description": "Remplissage local depuis votre coffre BitLock sur localhost.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["http://localhost:3000/*"],
+  "action": {
+    "default_title": "BitLock Local",
+    "default_popup": "popup.html"
+  }
+}

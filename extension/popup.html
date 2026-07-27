@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="popup.css">
+  <title>BitLock Local</title>
+</head>
+<body>
+  <header><span class="mark">B</span><div><strong>BitLock</strong><small>LOCAL EXTENSION</small></div></header>
+  <main>
+    <p id="origin" class="origin">SITE / —</p>
+    <label>
+      Jeton local
+      <input id="token" type="password" autocomplete="off" placeholder="blx_…">
+      <small>Générez-le dans BitLock → Paramètres → Sécurité.</small>
+    </label>
+    <label>
+      Mot de passe maître
+      <input id="master" type="password" autocomplete="off" placeholder="••••••••••••">
+    </label>
+    <button id="load">Charger les identifiants</button>
+    <div id="status" role="status"></div>
+    <div id="accounts"></div>
+  </main>
+  <footer><a href="http://localhost:3000/dashboard/settings" target="_blank">Configurer BitLock ↗</a></footer>
+  <script src="popup.js"></script>
+</body>
+</html>

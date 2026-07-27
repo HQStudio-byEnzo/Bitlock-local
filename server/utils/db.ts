@@ -1,0 +1,64 @@
+import { createClient } from '@libsql/client'
+import type { H3Event } from 'h3'
+import { ensureVaultSchema } from './vault-schema'
+import { useRuntimeConfig } from '#imports'
+
+let dbClient: ReturnType<typeof createClient> | null = null
+let dbReadyPromise: Promise<void> | null = null
+let dbProxy: ReturnType<typeof createClient> | null = null
+
+/**
+ * Récupère le client SQLite local
+ * Utilise un singleton pour réutiliser la connexion
+ */
+export function useDB(event?: H3Event) {
+  if (dbProxy) return dbProxy
+
+  const config = useRuntimeConfig()
+
+  const dbPath = String(config.dbPath || './data/bitlock.db')
+
+  dbClient = createClient({
+    url: `file:${dbPath}`,
+  })
+
+  if (!dbReadyPromise) {
+    dbReadyPromise = (async () => {
+      await dbClient!.execute('PRAGMA foreign_keys = ON')
+      await dbClient!.execute('PRAGMA busy_timeout = 5000')
+      await ensureVaultSchema(dbClient!)
+    })().finally(() => {
+      dbReadyPromise = null
+    })
+  }
+
+  dbProxy = new Proxy(dbClient as ReturnType<typeof createClient>, {
+    get(target, prop, receiver) {
+      if (prop === 'execute') {
+        return async (...args: any[]) => {
+          if (dbReadyPromise) await dbReadyPromise
+          return (target.execute as any)(...args)
+        }
+      }
+
+      if (prop === 'batch') {
+        return async (...args: any[]) => {
+          if (dbReadyPromise) await dbReadyPromise
+          return (target.batch as any)(...args)
+        }
+      }
+
+      if (prop === 'transaction') {
+        return async (...args: any[]) => {
+          if (dbReadyPromise) await dbReadyPromise
+          return (target.transaction as any)(...args)
+        }
+      }
+
+      const value = Reflect.get(target, prop, receiver)
+      return typeof value === 'function' ? value.bind(target) : value
+    },
+  }) as ReturnType<typeof createClient>
+
+  return dbProxy
+}

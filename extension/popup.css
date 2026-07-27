@@ -1,0 +1,21 @@
+:root{color-scheme:dark;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#05090f;color:#eef7f0}
+*{box-sizing:border-box}
+body{width:360px;margin:0;background:#05090f}
+header{display:flex;gap:12px;align-items:center;padding:16px;border-bottom:1px solid #1d2b25}
+.mark{display:grid;place-items:center;width:32px;height:32px;border:1px solid #4ade80;color:#4ade80;font-size:18px}
+strong,small{display:block}
+small,.origin{font-size:10px;letter-spacing:.16em;color:#719081;margin-top:3px}
+main{padding:16px}
+label{display:block;margin-top:12px;font-size:11px;color:#9eb4a8}
+label:first-of-type{margin-top:0}
+label small{font-size:9px;line-height:1.4;letter-spacing:0;color:#607a6d;margin-top:5px}
+input{width:100%;margin-top:7px;background:#0a1219;border:1px solid #26352e;color:white;padding:11px;outline:none}
+input:focus{border-color:#4ade80}
+button{width:100%;margin-top:10px;border:1px solid #4ade80;background:#123321;color:#8bffa9;padding:11px;font:inherit;cursor:pointer}
+button:hover{background:#174329}
+#status{min-height:18px;margin-top:12px;font-size:11px;color:#f7c86b}
+.account{margin-top:9px;padding:12px;border:1px solid #26352e;background:#091019;text-align:left}
+.account b,.account span{display:block}
+.account span{margin-top:4px;font-size:11px;color:#82978d}
+footer{padding:13px 16px;border-top:1px solid #1d2b25}
+a{color:#72e996;font-size:11px;text-decoration:none}
