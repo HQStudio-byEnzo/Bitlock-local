@@ -174,7 +174,7 @@ export function useVault() {
       throw new Error('Format de payload chiffré invalide.')
     }
 
-    return decrypt(envelope.ciphertext, item.iv, secret, envelope.salt)
+    return decrypt(envelope.ciphertext, item.iv, secret, envelope.salt, envelope.iterations)
   }
 
   /**
@@ -237,6 +237,7 @@ export function useVault() {
         snapshot.iv,
         sourcePassword || '',
         envelope.salt,
+        envelope.iterations,
       )
       const historyEncrypted = await encrypt(historyPlain, newPassword)
       historyReplacements.push({

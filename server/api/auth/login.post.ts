@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const username = normalizeUsername(body.username)
   const password = requireString(body.password, 'Password', { min: 1, max: 128, trim: false })
   enforceRateLimit(event, 'auth-login-ip', 50, 15 * 60 * 1000)
-  enforceRateLimit(event, 'auth-login-account', 10, 15 * 60 * 1000, username)
+  enforceRateLimit(event, 'auth-login-account', 10, 15 * 60 * 1000, username, { perClient: false })
 
   const db = useDB()
   const result = await db.execute({

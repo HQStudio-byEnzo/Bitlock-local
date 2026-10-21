@@ -5,7 +5,7 @@ BitLock est un coffre-fort numérique local construit avec Nuxt 3 et SQLite. Les
 ## Fonctions
 
 - mots de passe, liens, notes sécurisées, clés crypto et codes de récupération ;
-- compte local par username, sans adresse e-mail, avec indice révélé uniquement après un échec de connexion ;
+- compte local par username, sans adresse e-mail, avec indice révélé une seule fois après un échec de connexion ;
 - codes TOTP RFC 6238 générés localement ;
 - coffres multiples, dossiers, tags, favoris et recherche ;
 - vérification chiffrée du mot de passe maître et verrouillage automatique ;
@@ -38,8 +38,12 @@ bun run build
 `bun run test` exécute les contrôles qualité, cryptographiques, i18n et TypeScript avec les dépendances locales du projet. Après un build, lancer le serveur Bun avec :
 
 ```bash
-bun run .output/server/index.mjs
+bun run start
 ```
+
+`bun run start` n’écoute que sur `127.0.0.1` : le coffre n’est pas joignable depuis le réseau
+local. Pour l’exposer volontairement, lancer `bun run .output/server/index.mjs` derrière un
+proxy HTTPS, en sachant que les limites de débit se basent alors sur l’adresse du proxy.
 
 Le test API `bun run test:smoke` s’exécute contre un serveur déjà lancé. Il crée un compte temporaire, vérifie le défi d’indice, la connexion, les coffres, notes, tags, statistiques, versions, rotation du mot de passe maître et révocation du jeton d’extension, puis supprime toutes ses données.
 
@@ -54,7 +58,7 @@ APP_URL=http://localhost:3000
 ## Sécurité
 
 - chiffrement : AES-256-GCM avec IV aléatoire de 96 bits ;
-- dérivation : PBKDF2-HMAC-SHA-256, 100 000 itérations, sel aléatoire de 128 bits ;
+- dérivation : PBKDF2-HMAC-SHA-256, 600 000 itérations (format `v2`), sel aléatoire de 128 bits ; les éléments chiffrés avant restent lisibles (100 000) et passent au nouveau format à la prochaine rotation du mot de passe maître ;
 - authentification : mot de passe d’au moins 12 caractères, limité à 72 octets UTF-8 pour rester compatible avec bcrypt, coût 12 et session chiffrée `nuxt-auth-utils` ;
 - rotation : données, historique et vérificateur du mot de passe maître sont remplacés dans une seule transaction ;
 - historique : les favoris ne créent pas de version parasite et les 50 versions les plus récentes sont conservées ;

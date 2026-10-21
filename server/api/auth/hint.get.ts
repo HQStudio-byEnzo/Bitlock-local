@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
     args: [username],
   })
   setHeader(event, 'Cache-Control', 'no-store')
-  await setUserSession(event, {})
+  // setUserSession fusionne : il faut effacer la session pour consommer le défi.
+  await clearUserSession(event)
   return { hint: result.rows[0]?.password_hint || null }
 })
