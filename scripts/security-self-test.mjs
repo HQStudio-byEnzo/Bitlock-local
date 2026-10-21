@@ -14,6 +14,19 @@ assert(atob(envelope.salt).length === 16, 'AES salt must contain 16 bytes')
 assert(atob(envelope.iv).length === 12, 'AES-GCM IV must contain 12 bytes')
 assert(await cryptoTools.decrypt(envelope.ciphertext, envelope.iv, password, envelope.salt) === plaintext, 'AES-GCM round trip failed')
 
+// Facteur de travail : 600 000 itérations pour tout nouveau chiffrement, l'ancien format reste lisible.
+assert(envelope.iterations === 600_000, 'New encryption must use 600,000 PBKDF2 iterations')
+const serialized = cryptoTools.serializeEncryptedPayload(envelope)
+assert(serialized.startsWith('v2:600000:'), 'New payloads must be versioned')
+assert(cryptoTools.parseEncryptedPayload(serialized).iterations === 600_000, 'Versioned payload lost its KDF work factor')
+const legacyKey = await cryptoTools.deriveKey(password, cryptoTools.base64ToArrayBuffer(envelope.salt), 100_000)
+const legacyIv = crypto.getRandomValues(new Uint8Array(12))
+const legacyCipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: legacyIv }, legacyKey, new TextEncoder().encode(plaintext))
+const legacy = cryptoTools.parseEncryptedPayload(`${envelope.salt}:${cryptoTools.arrayBufferToBase64(legacyCipher)}`)
+assert(legacy.iterations === 100_000, 'Legacy payloads must keep their 100,000 iterations')
+assert(await cryptoTools.decrypt(legacy.ciphertext, cryptoTools.arrayBufferToBase64(legacyIv), password, legacy.salt, legacy.iterations) === plaintext,
+  'Legacy payloads are no longer readable')
+
 let rejectedWrongPassword = false
 try { await cryptoTools.decrypt(envelope.ciphertext, envelope.iv, 'wrong password', envelope.salt) }
 catch { rejectedWrongPassword = true }
@@ -37,4 +50,6 @@ console.log(JSON.stringify({
   wrongPasswordRejected: true,
   credentialSchema: true,
   rfc6238: true,
+  versionedKdf: true,
+  legacyPayloadCompatible: true,
 }))

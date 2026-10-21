@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
   let payload = body.payload === undefined ? current.payload : body.payload
   const iv = body.iv === undefined ? current.iv : body.iv
   if (current.type !== 'link' && !encrypted) throw createError({ statusCode: 400, message: 'Cet élément doit rester chiffré.' })
-  if (encrypted) assertEncryptedPayload(payload, iv)
+  // Une valeur déjà en base peut rester à l'ancien format ; une nouvelle, non.
+  if (encrypted) assertEncryptedPayload(payload, iv, { allowLegacy: body.payload === undefined && body.iv === undefined })
   else payload = requireString(payload, 'Payload', { min: 1, max: 100_000, trim: false })
 
   const updates: string[] = []

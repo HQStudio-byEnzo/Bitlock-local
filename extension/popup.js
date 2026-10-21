@@ -9,12 +9,20 @@ function bytes(value) {
   return Uint8Array.from(atob(value), char => char.charCodeAt(0))
 }
 
+/** `v2:600000:<sel>:<chiffré>` (format courant) ou `<sel>:<chiffré>` (100 000 itérations). */
+function parsePayload(payload) {
+  const parts = String(payload || '').split(':')
+  if (parts.length === 2) return { salt: parts[0], ciphertext: parts[1], iterations: 100000 }
+  if (parts.length === 4 && parts[0] === 'v2' && parts[1] === '600000') return { salt: parts[2], ciphertext: parts[3], iterations: 600000 }
+  return {}
+}
+
 async function decryptItem(item, password) {
-  const [salt, ciphertext] = item.payload.split(':')
+  const { salt, ciphertext, iterations } = parsePayload(item.payload)
   if (!salt || !ciphertext || !item.iv) throw new Error('FORMAT')
   const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey'])
   const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: bytes(salt), iterations: 100000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: bytes(salt), iterations, hash: 'SHA-256' },
     material,
     { name: 'AES-GCM', length: 256 },
     false,

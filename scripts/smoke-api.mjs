@@ -86,8 +86,9 @@ try {
     method: 'PUT',
     body: JSON.stringify({ password, hint: 'Indice smoke modifié' }),
   })
-  const updatedHint = (await request(`/api/auth/hint?username=${encodeURIComponent(username)}`)).data
-  assert(updatedHint.hint === 'Indice smoke modifié', 'Password hint update failed')
+  // Le défi d'indice est à usage unique : l'indice modifié se relit dans le profil.
+  const updatedHint = (await request('/api/auth/me')).data
+  assert(updatedHint.password_hint === 'Indice smoke modifié', 'Password hint update failed')
 
   const organization = (await request('/api/organization')).data
   assert(organization.vaults.length === 1, 'Default vault was not created')
@@ -97,7 +98,7 @@ try {
     method: 'POST',
     body: JSON.stringify({
       type: 'note', label: 'Encrypted smoke note', is_encrypted: true,
-      payload: 'AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
+      payload: 'v2:600000:AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
       iv: 'AAAAAAAAAAAAAAAA', vault_id: vaultId,
     }),
   })).data
@@ -116,26 +117,26 @@ try {
     body: JSON.stringify({
       items: [{
         id: note.id,
-        previousPayload: 'AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
+        previousPayload: 'v2:600000:AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
         previousIv: 'AAAAAAAAAAAAAAAA',
-        payload: 'BBBBBBBBBBBBBBBBBBBBBB==:BBBBBBBBBBBBBBBBBBBBBB==',
+        payload: 'v2:600000:BBBBBBBBBBBBBBBBBBBBBB==:BBBBBBBBBBBBBBBBBBBBBB==',
         iv: 'BBBBBBBBBBBBBBBB',
       }],
       history: [{
         id: history.history[0].id,
-        previousPayload: 'AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
+        previousPayload: 'v2:600000:AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
         previousIv: 'AAAAAAAAAAAAAAAA',
-        payload: 'CCCCCCCCCCCCCCCCCCCCCC==:CCCCCCCCCCCCCCCCCCCCCC==',
+        payload: 'v2:600000:CCCCCCCCCCCCCCCCCCCCCC==:CCCCCCCCCCCCCCCCCCCCCC==',
         iv: 'CCCCCCCCCCCCCCCC',
       }],
       verifier: {
-        payload: 'DDDDDDDDDDDDDDDDDDDDDD==:DDDDDDDDDDDDDDDDDDDDDD==',
+        payload: 'v2:600000:DDDDDDDDDDDDDDDDDDDDDD==:DDDDDDDDDDDDDDDDDDDDDD==',
         iv: 'DDDDDDDDDDDDDDDD',
       },
     }),
   })
   const verifier = (await request('/api/security/master-verifier')).data
-  assert(verifier.verifier?.payload.startsWith('DDDD'), 'Master verifier was not rotated atomically')
+  assert(verifier.verifier?.payload.startsWith('v2:600000:DDDD'), 'Master verifier was not rotated atomically')
 
   const tag = (await request('/api/organization', {
     method: 'POST', body: JSON.stringify({ kind: 'tag', name: 'smoke-tag', color: '#4ade80' }),
@@ -153,7 +154,7 @@ try {
     method: 'POST',
     body: JSON.stringify({
       type: 'password', label: 'Extension smoke account', is_encrypted: true,
-      payload: 'AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
+      payload: 'v2:600000:AAAAAAAAAAAAAAAAAAAAAA==:AAAAAAAAAAAAAAAAAAAAAA==',
       iv: 'AAAAAAAAAAAAAAAA', url: 'https://example.com', vault_id: vaultId,
     }),
   })

@@ -7,8 +7,13 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>()
 
+/**
+ * Adresse de la connexion TCP. BitLock tourne en local, sans proxy devant :
+ * X-Forwarded-For viendrait du client lui-même, qui pourrait changer d'IP à
+ * chaque requête et échapper aux limites.
+ */
 function clientAddress(event: H3Event) {
-  return getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+  return getRequestIP(event) || 'unknown'
 }
 
 export function enforceRateLimit(
@@ -17,9 +22,11 @@ export function enforceRateLimit(
   limit: number,
   windowMs: number,
   discriminator = '',
+  { perClient = true } = {},
 ) {
   const now = Date.now()
-  const key = `${scope}:${clientAddress(event)}:${discriminator}`
+  // perClient: false compte toutes les adresses ensemble (ex. essais sur un même compte).
+  const key = `${scope}:${perClient ? clientAddress(event) : '*'}:${discriminator}`
   const current = store.get(key)
 
   if (!current || current.resetAt <= now) {
